@@ -61,6 +61,21 @@ def reset_db():
     return {"message": "Database reset successfully"}
 
 
+from fastapi.middleware.cors import CORSMiddleware
+# ...existing code...
+
+app = FastAPI(title="Campus Colony API")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Change this to your frontend URL/port
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+# ...existing code...
+
 # 🧬 SCHEMA VIEW
 @app.get("/schema")
 def get_schema():
