@@ -1,6 +1,8 @@
 from fastapi import FastAPI
-from app.database import Base, engine
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
+
+from app.database import Base, engine
 
 # Models (important for table creation)
 from app.models.listing import Listing
@@ -15,22 +17,37 @@ from app.routes.areas import router as areas_router
 from app.routes.auth import router as auth_router
 from app.routes.landlords import router as landlords_router
 from app.routes.listings import router as listings_router
-from app.routes.ai import router as ai_router   # 👈 NLP here
+from app.routes.ai import router as ai_router
 from app.routes.reviews import router as reviews_router  
 from app.routes.favourites import router as favourites_router
+from app.routes.users import router as users_router
 
+
+# ✅ CREATE APP ONLY ONCE
 app = FastAPI(title="Campus Colony API")
 
-# Create tables
+
+# ✅ CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# ✅ Create tables
 Base.metadata.create_all(bind=engine)
 
 
 # 🔗 ROUTES
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+app.include_router(users_router, prefix="/users", tags=["Users"])
 app.include_router(areas_router, prefix="/areas", tags=["Areas"])
 app.include_router(landlords_router, prefix="/landlords", tags=["Landlords"])
 app.include_router(listings_router, prefix="/listings", tags=["Listings"])
-app.include_router(ai_router, prefix="/ai", tags=["AI / Chatbot"])  # 👈 NLP
+app.include_router(ai_router, prefix="/ai", tags=["AI / Chatbot"])
 app.include_router(reviews_router, prefix="/reviews", tags=["Reviews"])
 app.include_router(favourites_router, prefix="/favourites", tags=["Favourites"])
 
@@ -60,21 +77,6 @@ def reset_db():
     Base.metadata.create_all(bind=engine)
     return {"message": "Database reset successfully"}
 
-
-from fastapi.middleware.cors import CORSMiddleware
-# ...existing code...
-
-app = FastAPI(title="Campus Colony API")
-
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Change this to your frontend URL/port
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-# ...existing code...
 
 # 🧬 SCHEMA VIEW
 @app.get("/schema")
