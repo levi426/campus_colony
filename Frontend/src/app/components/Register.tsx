@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router';
 import { useState } from 'react';
-import { User, Phone, Mail, Lock, MapPin, Home, DollarSign } from 'lucide-react';
+import { User, Phone, Mail, Lock, MapPin, Home, DollarSign, ArrowLeft } from 'lucide-react';
+import { signupUser } from '../../api/api';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -14,15 +15,29 @@ export default function Register() {
     password: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/login');
+    setError('');
+    try {
+      await signupUser(formData.name, formData.email, formData.password || 'student123', formData.block);
+      localStorage.setItem('cc_name', formData.name);
+      localStorage.setItem('cc_email', formData.email);
+      navigate('/login');
+    } catch {
+      setError('Registration failed. This email may already exist or backend signup is unavailable.');
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center p-6">
       <div className="w-full max-w-2xl">
         <div className="bg-white rounded-2xl p-8 shadow-sm border border-[#E9ECEF]">
+          <Link to="/home" className="inline-flex items-center gap-2 text-[#121212] hover:underline mb-6">
+            <ArrowLeft className="w-4 h-4" />
+            Back to Home
+          </Link>
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-[#121212] mb-2">Create Your Account</h1>
             <p className="text-gray-600">Join Campus Colony - Student Housing Platform</p>
@@ -158,6 +173,7 @@ export default function Register() {
             >
               Create Account
             </button>
+            {error && <p className="text-sm text-red-600 text-center">{error}</p>}
           </form>
 
           <p className="text-center mt-6 text-gray-600">

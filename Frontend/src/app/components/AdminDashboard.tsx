@@ -1,239 +1,329 @@
-import { TrendingUp, Building2, Users, DollarSign, Star, MapPin, BarChart3, CheckCircle, Clock } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
+import { Building2, Home, MessageSquare, Trash2, Users, Plus, RefreshCw, LogOut } from 'lucide-react';
+import { createLandlord, createListing, deleteLandlord, deleteListing, deleteReview, getLandlords, getListingReviews, getListings, getUsers } from '../../api/api';
+
+type Tab = 'landlords' | 'listings' | 'reviews' | 'users';
 
 export default function AdminDashboard() {
-  const stats = [
-    { label: 'Total Hostels', value: '+2,847', subValue: '+3 this week', icon: Building2, color: '#121212', trend: '+12%' },
-    { label: 'Active Users', value: '+2,100', subValue: 'Active', icon: Users, color: '#121212', trend: '+5%' },
-    { label: 'Monthly Revenue', value: '+1,243', subValue: 'Revenue', icon: DollarSign, color: '#121212', trend: '+15%' },
+  const navigate = useNavigate();
+  const [tab, setTab] = useState<Tab>('landlords');
+  const [landlords, setLandlords] = useState<any[]>([]);
+  const [listings, setListings] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [reviewListingId, setReviewListingId] = useState('1');
+  const [message, setMessage] = useState('');
+  const [landlordForm, setLandlordForm] = useState({ name: '', phone: '', email: '' });
+  const [listingForm, setListingForm] = useState({
+    title: '',
+    description: '',
+    price: '',
+    type: 'Hostel',
+    area_id: '',
+    landlord_id: '',
+    latitude: '',
+    longitude: '',
+  });
+
+  const load = async () => {
+    setMessage('');
+    try {
+      const [landlordRows, listingRows] = await Promise.all([getLandlords(), getListings()]);
+      setLandlords(Array.isArray(landlordRows) ? landlordRows : []);
+      setListings(Array.isArray(listingRows) ? listingRows : []);
+    } catch (error) {
+      setMessage('Could not load backend data. Check backend routes and login token.');
+    }
+  };
+
+  const loadUsers = async () => {
+    setMessage('');
+    try {
+      const userRows = await getUsers();
+      setUsers(Array.isArray(userRows) ? userRows : []);
+    } catch {
+      setMessage('Could not load users. This requires a real backend admin token.');
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const addLandlord = async (event: React.FormEvent) => {
+    event.preventDefault();
+    try {
+      await createLandlord(landlordForm);
+      setLandlordForm({ name: '', phone: '', email: '' });
+      await load();
+    } catch {
+      setMessage('Add landlord failed. Admin token may be missing or expired.');
+    }
+  };
+
+  const removeLandlord = async (id: number) => {
+    try {
+      await deleteLandlord(id);
+      await load();
+    } catch {
+      setMessage('Delete landlord failed. Admin token may be missing or expired.');
+    }
+  };
+
+  const removeListing = async (id: number) => {
+    try {
+      await deleteListing(id);
+      await load();
+    } catch {
+      setMessage('Delete listing failed. Admin token may be missing or expired.');
+    }
+  };
+
+  const addListing = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const data = new FormData();
+    Object.entries(listingForm).forEach(([key, value]) => {
+      if (value) data.append(key, value);
+    });
+    try {
+      await createListing(data);
+      setListingForm({ title: '', description: '', price: '', type: 'Hostel', area_id: '', landlord_id: '', latitude: '', longitude: '' });
+      await load();
+    } catch {
+      setMessage('Add listing failed. Admin token may be missing, or area/landlord IDs may not exist.');
+    }
+  };
+
+  const loadReviews = async () => {
+    try {
+      const data = await getListingReviews(Number(reviewListingId));
+      setReviews(Array.isArray(data?.reviews) ? data.reviews : Array.isArray(data) ? data : []);
+    } catch {
+      setMessage('Could not load reviews for this listing.');
+    }
+  };
+
+  const removeReview = async (id: number) => {
+    try {
+      await deleteReview(id);
+      await loadReviews();
+    } catch {
+      setMessage('Delete review failed. Admin token may be missing or expired.');
+    }
+  };
+
+  const tabs = [
+    { id: 'landlords' as Tab, label: 'Landlords', icon: Building2 },
+    { id: 'listings' as Tab, label: 'Listings', icon: Home },
+    { id: 'reviews' as Tab, label: 'Reviews', icon: MessageSquare },
+    { id: 'users' as Tab, label: 'Users', icon: Users },
   ];
 
-  const hostelData = [
-    {
-      hostel: 'Faisal Block-A Premium',
-      location: 'Block A, Faisal Town',
-      beds: '40/50',
-      revenue: '12,500',
-      rating: '4.8',
-      status: 'Active',
-      occupancy: 80
-    },
-    {
-      hostel: 'The Residency',
-      location: 'Block C, Faisal Town',
-      beds: '35/40',
-      revenue: '15,200',
-      rating: '4.9',
-      status: 'Active',
-      occupancy: 87
-    },
-    {
-      hostel: 'D-Block Executive',
-      location: 'Block D, Faisal Town',
-      beds: '45/60',
-      revenue: '18,000',
-      rating: '4.7',
-      status: 'Active',
-      occupancy: 75
-    },
-    {
-      hostel: 'B-Block Residence',
-      location: 'Block B, Faisal Town',
-      beds: '52/55',
-      revenue: '11,800',
-      rating: '4.6',
-      status: 'Active',
-      occupancy: 95
-    },
-    {
-      hostel: 'Elite Hostel A-Block',
-      location: 'Block A, Faisal Town',
-      beds: '28/35',
-      revenue: '9,500',
-      rating: '4.5',
-      status: 'Active',
-      occupancy: 80
-    },
-  ];
+  const goHome = () => {
+    navigate('/home');
+  };
 
-  const userManagement = [
-    { name: 'Ahmed Ali', email: 'ahmed@university.edu.pk', hostel: 'Block A Premium', status: 'Paid', joined: '2026-01-15' },
-    { name: 'Fatima Khan', email: 'fatima@university.edu.pk', hostel: 'The Residency', status: 'Paid', joined: '2026-02-20' },
-    { name: 'Hassan Raza', email: 'hassan@university.edu.pk', hostel: 'D-Block Executive', status: 'Pending', joined: '2026-03-10' },
-    { name: 'Ayesha Malik', email: 'ayesha@university.edu.pk', hostel: 'B-Block Residence', status: 'Paid', joined: '2026-04-05' },
-  ];
+  const logout = () => {
+    localStorage.removeItem('cc_token');
+    localStorage.removeItem('cc_role');
+    localStorage.removeItem('cc_email');
+    navigate('/home');
+  };
 
   return (
-    <div className="min-h-screen bg-white p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-[#121212] mb-2">Dashboard Overview</h1>
-          <p className="text-gray-600">Manage your student accommodation platform</p>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <div
-                key={index}
-                className="bg-white border border-[#E9ECEF] rounded-xl p-6 hover:shadow-lg transition-shadow"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="p-3 bg-[#F8F9FA] rounded-lg">
-                    <Icon className="w-6 h-6" style={{ color: stat.color }} />
-                  </div>
-                  <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded-full text-sm">
-                    <TrendingUp className="w-3 h-3" />
-                    <span>{stat.trend}</span>
-                  </div>
-                </div>
-                <div className="text-3xl font-bold text-[#121212] mb-1">{stat.value}</div>
-                <div className="text-gray-600">{stat.label}</div>
-                <div className="text-sm text-gray-500 mt-2">{stat.subValue}</div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Hostel Performance Table */}
-        <div className="bg-white border border-[#E9ECEF] rounded-xl overflow-hidden mb-8">
-          <div className="p-6 border-b border-[#E9ECEF]">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-[#121212] mb-1">Hostel Performance - Latest</h2>
-                <p className="text-gray-600">Real-time occupancy and revenue data</p>
-              </div>
-              <button className="px-4 py-2 border border-[#E9ECEF] rounded-lg hover:bg-[#F8F9FA] transition-colors">
-                Export Data
-              </button>
-            </div>
+    <div className="min-h-screen bg-[#F7F8FA]">
+      <div className="bg-[#20272B] text-white">
+        <div className="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">Admin Console</h1>
+            <p className="text-gray-300">Single-admin management for landlords, listings, reviews, and users.</p>
           </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-[#F8F9FA]">
-                <tr>
-                  <th className="text-left py-4 px-6 font-medium text-[#121212]">Hostel</th>
-                  <th className="text-left py-4 px-6 font-medium text-[#121212]">Location</th>
-                  <th className="text-left py-4 px-6 font-medium text-[#121212]">Beds</th>
-                  <th className="text-left py-4 px-6 font-medium text-[#121212]">Revenue</th>
-                  <th className="text-left py-4 px-6 font-medium text-[#121212]">Rating</th>
-                  <th className="text-left py-4 px-6 font-medium text-[#121212]">Status</th>
-                  <th className="text-left py-4 px-6 font-medium text-[#121212]">Occupancy</th>
-                </tr>
-              </thead>
-              <tbody>
-                {hostelData.map((hostel, index) => (
-                  <tr key={index} className="border-t border-[#E9ECEF] hover:bg-[#F8F9FA] transition-colors">
-                    <td className="py-4 px-6">
-                      <div className="font-medium text-[#121212]">{hostel.hostel}</div>
-                    </td>
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <MapPin className="w-4 h-4" />
-                        <span>{hostel.location}</span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 text-gray-600">{hostel.beds}</td>
-                    <td className="py-4 px-6 font-medium text-[#121212]">Rs. {hostel.revenue}</td>
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 fill-[#121212] text-[#121212]" />
-                        <span className="font-medium">{hostel.rating}</span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6">
-                      <span className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm flex items-center gap-1 w-fit">
-                        <CheckCircle className="w-3 h-3" />
-                        {hostel.status}
-                      </span>
-                    </td>
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-2">
-                        <div className="w-16 h-2 bg-[#F8F9FA] rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-[#121212] rounded-full"
-                            style={{ width: `${hostel.occupancy}%` }}
-                          />
-                        </div>
-                        <span className="text-sm font-medium text-[#121212]">{hostel.occupancy}%</span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* User Management Table */}
-        <div className="bg-white border border-[#E9ECEF] rounded-xl overflow-hidden">
-          <div className="p-6 border-b border-[#E9ECEF]">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-[#121212] mb-1">User Management</h2>
-                <p className="text-gray-600">Recent user registrations and payment status</p>
-              </div>
-              <button className="px-4 py-2 bg-[#121212] text-white rounded-lg hover:bg-[#2D2D2D] transition-colors">
-                Add New User
-              </button>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-[#F8F9FA]">
-                <tr>
-                  <th className="text-left py-4 px-6 font-medium text-[#121212]">Name</th>
-                  <th className="text-left py-4 px-6 font-medium text-[#121212]">Email</th>
-                  <th className="text-left py-4 px-6 font-medium text-[#121212]">Hostel</th>
-                  <th className="text-left py-4 px-6 font-medium text-[#121212]">Payment Status</th>
-                  <th className="text-left py-4 px-6 font-medium text-[#121212]">Joined Date</th>
-                  <th className="text-left py-4 px-6 font-medium text-[#121212]">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {userManagement.map((user, index) => (
-                  <tr key={index} className="border-t border-[#E9ECEF] hover:bg-[#F8F9FA] transition-colors">
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[#121212] rounded-full flex items-center justify-center text-white font-bold">
-                          {user.name.charAt(0)}
-                        </div>
-                        <div className="font-medium text-[#121212]">{user.name}</div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 text-gray-600">{user.email}</td>
-                    <td className="py-4 px-6 text-gray-600">{user.hostel}</td>
-                    <td className="py-4 px-6">
-                      <span className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 w-fit ${
-                        user.status === 'Paid'
-                          ? 'bg-green-50 text-green-700'
-                          : 'bg-gray-100 text-gray-700'
-                      }`}>
-                        {user.status === 'Paid' ? (
-                          <CheckCircle className="w-3 h-3" />
-                        ) : (
-                          <Clock className="w-3 h-3" />
-                        )}
-                        {user.status}
-                      </span>
-                    </td>
-                    <td className="py-4 px-6 text-gray-600">{user.joined}</td>
-                    <td className="py-4 px-6">
-                      <button className="px-3 py-1 border border-[#E9ECEF] rounded-lg hover:bg-[#F8F9FA] transition-colors text-sm">
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="flex gap-3">
+            <button onClick={goHome} className="px-4 py-3 bg-white text-[#20272B] rounded-lg flex items-center gap-2">
+              <Home className="w-4 h-4" />
+              Home
+            </button>
+            <button onClick={logout} className="px-4 py-3 border border-white text-white rounded-lg flex items-center gap-2 hover:bg-white hover:text-[#20272B] transition-colors">
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
           </div>
         </div>
       </div>
+
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="flex flex-wrap gap-2 mb-6">
+          {tabs.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setTab(item.id);
+                  if (item.id === 'users') loadUsers();
+                }}
+                className={`flex items-center gap-2 px-4 py-3 rounded-lg border transition-colors ${
+                  tab === item.id ? 'bg-[#20272B] text-white border-[#20272B]' : 'bg-white text-[#20272B] border-[#DDE1E6]'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {item.label}
+              </button>
+            );
+          })}
+          <button onClick={load} className="ml-auto flex items-center gap-2 px-4 py-3 rounded-lg border border-[#DDE1E6] bg-white">
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </button>
+        </div>
+
+        {message && <div className="mb-6 bg-white border border-[#DDE1E6] rounded-lg p-4 text-[#717684]">{message}</div>}
+
+        {tab === 'landlords' && (
+          <section className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6">
+            <form onSubmit={addLandlord} className="bg-white border border-[#DDE1E6] rounded-lg p-6 h-fit">
+              <h2 className="text-2xl font-bold text-[#20272B] mb-4">Add Landlord</h2>
+              {['name', 'phone', 'email'].map((field) => (
+                <input
+                  key={field}
+                  required={field !== 'email'}
+                  value={(landlordForm as any)[field]}
+                  onChange={(e) => setLandlordForm({ ...landlordForm, [field]: e.target.value })}
+                  placeholder={field[0].toUpperCase() + field.slice(1)}
+                  className="w-full mb-3 px-4 py-3 border border-[#DDE1E6] rounded-lg"
+                />
+              ))}
+              <button className="w-full bg-[#20272B] text-white py-3 rounded-lg flex items-center justify-center gap-2">
+                <Plus className="w-4 h-4" />
+                Add Landlord
+              </button>
+            </form>
+
+            <Table title="All Landlords" headers={['Name', 'Phone', 'Email', 'Action']}>
+              {landlords.map((landlord) => (
+                <tr key={landlord.id} className="border-t border-[#DDE1E6]">
+                  <td className="p-4 font-medium">{landlord.name}</td>
+                  <td className="p-4">{landlord.phone}</td>
+                  <td className="p-4">{landlord.email || '-'}</td>
+                  <td className="p-4">
+                    <IconButton onClick={() => removeLandlord(landlord.id)} label="Delete" />
+                  </td>
+                </tr>
+              ))}
+            </Table>
+          </section>
+        )}
+
+        {tab === 'listings' && (
+          <section className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6">
+            <form onSubmit={addListing} className="bg-white border border-[#DDE1E6] rounded-lg p-6 h-fit">
+              <h2 className="text-2xl font-bold text-[#20272B] mb-4">Add Listing</h2>
+              {[
+                ['title', 'Title'],
+                ['description', 'Description'],
+                ['price', 'Price'],
+                ['type', 'Type'],
+                ['area_id', 'Area ID'],
+                ['landlord_id', 'Landlord ID'],
+                ['latitude', 'Latitude'],
+                ['longitude', 'Longitude'],
+              ].map(([field, label]) => (
+                <input
+                  key={field}
+                  required={['title', 'price', 'type', 'area_id', 'landlord_id'].includes(field)}
+                  value={(listingForm as any)[field]}
+                  onChange={(e) => setListingForm({ ...listingForm, [field]: e.target.value })}
+                  placeholder={label}
+                  className="w-full mb-3 px-4 py-3 border border-[#DDE1E6] rounded-lg"
+                />
+              ))}
+              <button className="w-full bg-[#20272B] text-white py-3 rounded-lg flex items-center justify-center gap-2">
+                <Plus className="w-4 h-4" />
+                Add Listing
+              </button>
+            </form>
+
+            <Table title="Listings" headers={['Title', 'Type', 'Price', 'Area', 'Landlord', 'Action']}>
+              {listings.map((listing) => (
+                <tr key={listing.id} className="border-t border-[#DDE1E6]">
+                  <td className="p-4 font-medium">{listing.title}</td>
+                  <td className="p-4">{listing.type}</td>
+                  <td className="p-4">Rs. {listing.price}</td>
+                  <td className="p-4">{listing.area_id}</td>
+                  <td className="p-4">{listing.landlord_id}</td>
+                  <td className="p-4">
+                    <IconButton onClick={() => removeListing(listing.id)} label="Delete" />
+                  </td>
+                </tr>
+              ))}
+            </Table>
+          </section>
+        )}
+
+        {tab === 'reviews' && (
+          <section className="space-y-6">
+            <div className="bg-white border border-[#DDE1E6] rounded-lg p-6 flex flex-col md:flex-row gap-3 md:items-end">
+              <div className="flex-1">
+                <label className="block text-sm font-medium mb-2 text-[#20272B]">Listing ID</label>
+                <input value={reviewListingId} onChange={(e) => setReviewListingId(e.target.value)} className="w-full px-4 py-3 border border-[#DDE1E6] rounded-lg" />
+              </div>
+              <button onClick={loadReviews} className="px-6 py-3 bg-[#20272B] text-white rounded-lg">Load Reviews</button>
+            </div>
+            <Table title="Rental Area Reviews" headers={['User', 'Rating', 'Content', 'Action']}>
+              {reviews.map((review) => (
+                <tr key={review.id} className="border-t border-[#DDE1E6]">
+                  <td className="p-4">{review.user_id || '-'}</td>
+                  <td className="p-4">{review.rating}</td>
+                  <td className="p-4">{review.content}</td>
+                  <td className="p-4">
+                    <IconButton onClick={() => removeReview(review.id)} label="Delete" />
+                  </td>
+                </tr>
+              ))}
+            </Table>
+          </section>
+        )}
+
+        {tab === 'users' && (
+          <Table title="Users" headers={['Name', 'Email', 'Role', 'Status']}>
+            {users.map((user) => (
+              <tr key={user.email} className="border-t border-[#DDE1E6]">
+                <td className="p-4 font-medium">{user.name}</td>
+                <td className="p-4">{user.email}</td>
+                <td className="p-4">{user.role}</td>
+                <td className="p-4">{user.is_active ? 'Active' : 'Inactive'}</td>
+              </tr>
+            ))}
+          </Table>
+        )}
+      </div>
     </div>
+  );
+}
+
+function Table({ title, headers, children }: { title: string; headers: string[]; children: React.ReactNode }) {
+  return (
+    <div className="bg-white border border-[#DDE1E6] rounded-lg overflow-hidden">
+      <div className="p-6 border-b border-[#DDE1E6]">
+        <h2 className="text-2xl font-bold text-[#20272B]">{title}</h2>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-[#F0F2F4]">
+            <tr>{headers.map((header) => <th key={header} className="text-left p-4 text-[#20272B]">{header}</th>)}</tr>
+          </thead>
+          <tbody>{children}</tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function IconButton({ onClick, label }: { onClick: () => void; label: string }) {
+  return (
+    <button onClick={onClick} aria-label={label} title={label} className="p-2 border border-[#DDE1E6] rounded-lg hover:bg-[#F0F2F4]">
+      <Trash2 className="w-4 h-4 text-[#20272B]" />
+    </button>
   );
 }

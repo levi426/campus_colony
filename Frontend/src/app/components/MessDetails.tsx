@@ -1,58 +1,11 @@
 import { useParams, Link } from 'react-router';
 import { Star, Utensils, Clock, MapPin, Phone, ArrowLeft, CheckCircle } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { messProviders } from '../data/messProviders';
 
 export default function MessDetails() {
   const { id } = useParams();
-
-  const messData: Record<string, any> = {
-    '1': {
-      name: 'Faisal Town Tiffin',
-      description: 'Premium Quality Meals',
-      price: '8,000',
-      rating: 4.9,
-      image: 'https://images.unsplash.com/photo-1676471926534-d5c9771909fa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1200',
-      location: 'Block A, Faisal Town',
-      phone: '+92 300 1234567',
-      menu: {
-        breakfast: ['Paratha + Omelette', 'Halwa Puri', 'Tea/Coffee', 'Fresh Juice'],
-        lunch: ['Chicken Karahi', 'Biryani', 'Dal Makhani', 'Mixed Vegetables', 'Raita', 'Salad'],
-        dinner: ['Qeema', 'Chicken Tikka', 'Palak Paneer', 'Naan/Roti', 'Rice', 'Dessert'],
-      },
-      features: ['Hygienic Kitchen', 'Timely Delivery', 'Customizable Menu', 'Monthly Plans'],
-    },
-    '2': {
-      name: 'Student Meal Express',
-      description: 'Healthy Daily Nutrition',
-      price: '7,500',
-      rating: 4.7,
-      image: 'https://images.unsplash.com/photo-1583065756216-334ab22b5a6c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1200',
-      location: 'Block B, Faisal Town',
-      phone: '+92 300 7654321',
-      menu: {
-        lunch: ['Chicken Handi', 'Vegetable Pulao', 'Lentils', 'Chapati', 'Raita'],
-        dinner: ['Beef Nihari', 'Aloo Gosht', 'Mixed Dal', 'Roti', 'Sweet Dish'],
-      },
-      features: ['Fresh Ingredients', 'Budget Friendly', 'Home-style Cooking', 'Weekly Menu'],
-    },
-    '3': {
-      name: 'Campus Kitchen',
-      description: 'Home-Style Cooking',
-      price: '9,000',
-      rating: 4.8,
-      image: 'https://images.unsplash.com/photo-1733410647375-3be1697aa4f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1200',
-      location: 'Block C, Faisal Town',
-      phone: '+92 300 9876543',
-      menu: {
-        breakfast: ['Egg Sandwich', 'Cereals', 'Milk/Tea', 'Fresh Fruits'],
-        lunch: ['BBQ Chicken', 'White Karahi', 'Chana Masala', 'Naan', 'Rice', 'Salad'],
-        dinner: ['Mutton Korma', 'Chicken Jalfrezi', 'Dal Tadka', 'Roti', 'Kheer'],
-      },
-      features: ['Organic Ingredients', 'Premium Quality', 'Flexible Timing', 'Special Occasions Menu'],
-    },
-  };
-
-  const mess = messData[id || '1'];
+  const mess = messProviders.find((item) => String(item.id) === id) || messProviders[0];
 
   return (
     <div className="min-h-screen bg-white">
@@ -144,14 +97,11 @@ export default function MessDetails() {
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-4">
-          <button className="flex-1 bg-[#121212] text-white py-4 rounded-xl hover:bg-[#2D2D2D] transition-colors">
-            Subscribe Now
-          </button>
-          <button className="flex-1 border border-[#E9ECEF] text-[#121212] py-4 rounded-xl hover:bg-[#F8F9FA] transition-colors">
-            Contact Provider
-          </button>
+        <div className="bg-white border border-[#E9ECEF] rounded-xl p-6">
+          <p className="text-gray-600">
+            This is a static mess detail page. Update this component later with your final monthly cost,
+            breakfast, lunch, dinner, and contact data.
+          </p>
         </div>
       </div>
     </div>

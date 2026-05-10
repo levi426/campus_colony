@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router';
 import { useState } from 'react';
-import { Phone, Lock, Building2 } from 'lucide-react';
+import { Mail, Lock, Building2, ArrowLeft } from 'lucide-react';
+import { loginUser } from '../../api/api';
 
 interface LoginProps {
   onLogin: (isAdmin: boolean) => void;
@@ -8,14 +9,30 @@ interface LoginProps {
 
 export default function Login({ onLogin }: LoginProps) {
   const navigate = useNavigate();
-  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const isAdmin = phone === 'admin';
-    onLogin(isAdmin);
-    navigate(isAdmin ? '/admin' : '/home');
+    setError('');
+    try {
+      const result = await loginUser(email, password);
+      localStorage.setItem('cc_token', result.access_token);
+      localStorage.setItem('cc_email', email);
+      const admin = result.role === 'admin';
+      localStorage.setItem('cc_role', admin ? 'admin' : 'student');
+      onLogin(admin);
+      navigate(admin ? '/admin' : '/user');
+    } catch {
+      if (email === 'admin' && password) {
+        localStorage.setItem('cc_role', 'admin');
+        onLogin(true);
+        navigate('/admin');
+        return;
+      }
+      setError('Login failed. Check your email and password.');
+    }
   };
 
   return (
@@ -75,22 +92,26 @@ export default function Login({ onLogin }: LoginProps) {
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
           <div className="bg-white rounded-2xl p-8 shadow-sm border border-[#E9ECEF]">
+            <Link to="/home" className="inline-flex items-center gap-2 text-[#121212] hover:underline mb-6">
+              <ArrowLeft className="w-4 h-4" />
+              Back to Home
+            </Link>
             <h2 className="text-3xl font-bold text-[#121212] mb-2">Welcome Back</h2>
             <p className="text-gray-600 mb-8">Login to your Campus Colony account</p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-[#121212] font-medium mb-2 flex items-center gap-2">
-                  <Phone className="w-4 h-4" />
-                  Phone Number
+                  <Mail className="w-4 h-4" />
+                  Email
                 </label>
                 <input
-                  type="tel"
+                  type="text"
                   required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-3 border border-[#E9ECEF] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#121212] bg-white"
-                  placeholder="Enter your phone number"
+                  placeholder="Enter your email"
                 />
               </div>
 
@@ -125,6 +146,7 @@ export default function Login({ onLogin }: LoginProps) {
               >
                 Login
               </button>
+              {error && <p className="text-sm text-red-600 text-center">{error}</p>}
             </form>
 
             <p className="text-center mt-6 text-gray-600">
@@ -136,7 +158,7 @@ export default function Login({ onLogin }: LoginProps) {
 
             <div className="mt-6 pt-6 border-t border-[#E9ECEF]">
               <p className="text-xs text-center text-gray-500">
-                Demo: Use phone "admin" for admin dashboard
+                Admin fallback: use email "admin" with any password if backend admin login is not ready.
               </p>
             </div>
           </div>

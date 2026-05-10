@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { Star, MapPin, Shield, Bus, Wifi, Heart, Users, Building2, Utensils, Store, Pill, BookOpen, Music, Baby, Dumbbell, ArrowRight, MessageSquare, FileCheck, Map } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { messProviders } from '../data/messProviders';
 
 export default function Home() {
   const areaFeatures = [
@@ -53,33 +54,6 @@ export default function Home() {
       beds: 60,
       lat: 31.4237,
       lng: 74.2796,
-    },
-  ];
-
-  const messProviders = [
-    {
-      id: 1,
-      name: 'Faisal Town Tiffin',
-      description: 'Premium Quality Meals',
-      price: '8,000',
-      rating: 4.9,
-      image: 'https://images.unsplash.com/photo-1676471926534-d5c9771909fa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-    },
-    {
-      id: 2,
-      name: 'Student Meal Express',
-      description: 'Healthy Daily Nutrition',
-      price: '7,500',
-      rating: 4.7,
-      image: 'https://images.unsplash.com/photo-1583065756216-334ab22b5a6c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-    },
-    {
-      id: 3,
-      name: 'Campus Kitchen',
-      description: 'Home-Style Cooking',
-      price: '9,000',
-      rating: 4.8,
-      image: 'https://images.unsplash.com/photo-1733410647375-3be1697aa4f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
     },
   ];
 
@@ -315,9 +289,9 @@ export default function Home() {
             <p className="text-gray-600 text-lg">Healthy, hygienic, and affordable meal plans for students</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
             {messProviders.map((mess) => (
-              <div key={mess.id} className="bg-white border border-[#717684] rounded-xl overflow-hidden hover:shadow-xl transition-shadow">
+              <Link key={mess.id} to={`/mess/${mess.id}`} className="bg-white border border-[#717684] rounded-lg overflow-hidden hover:shadow-xl transition-shadow">
                 <div className="relative h-56">
                   <ImageWithFallback
                     src={mess.image}
@@ -337,15 +311,10 @@ export default function Home() {
                       <span className="text-2xl font-bold text-[#373F43]">Rs. {mess.price}</span>
                       <span className="text-sm text-gray-600">/month</span>
                     </div>
-                    <Link
-                      to={`/mess/${mess.id}`}
-                      className="px-4 py-2 bg-[#000000] text-white rounded-lg hover:bg-[#373F43] transition-colors"
-                    >
-                      View Menu
-                    </Link>
+                    <ArrowRight className="w-5 h-5 text-[#717684]" />
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
