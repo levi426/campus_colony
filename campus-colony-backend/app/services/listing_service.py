@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.models.listing import Listing
 from app.utils.helpers import upload_image
 
@@ -21,8 +21,14 @@ def create_listing(db: Session, data, image_file=None):
     return listing
 
 
-def get_listings(db: Session, sort: str = None):
-    query = db.query(Listing)
+def get_listings(db: Session, sort: str = None, search: str = None):
+    query = db.query(Listing).options(
+        joinedload(Listing.area),
+        joinedload(Listing.landlord)
+    )
+
+    if search:
+        query = query.filter(Listing.title.ilike(f"%{search}%"))
 
     if sort == "price_asc":
         query = query.order_by(Listing.price.asc())

@@ -7,7 +7,7 @@ from app.services.chatbot_service import chatbot_search
 from app.database import get_db
 from app.nlp.parser import parse_query
 # ✅ SINGLE router
-router = APIRouter(prefix="/ai", tags=["AI"])
+router = APIRouter(tags=["AI"])
 
 
 # 🔹 RENT PREDICTION

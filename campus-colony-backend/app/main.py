@@ -48,7 +48,7 @@ app.include_router(areas_router, prefix="/areas", tags=["Areas"])
 app.include_router(landlords_router, prefix="/landlords", tags=["Landlords"])
 app.include_router(listings_router, prefix="/listings", tags=["Listings"])
 app.include_router(ai_router, prefix="/ai", tags=["AI / Chatbot"])
-app.include_router(reviews_router, prefix="/reviews", tags=["Reviews"])
+app.include_router(reviews_router, tags=["Reviews"])
 app.include_router(favourites_router, prefix="/favourites", tags=["Favourites"])
 
 

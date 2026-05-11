@@ -23,7 +23,9 @@ def create_area(db: Session, data):
     )
 
     area.score = calculate_score(area)
-
+    area.score=area.score*2
+    if area.score>100:
+        area.score=100
     db.add(area)
     db.commit()
     db.refresh(area)

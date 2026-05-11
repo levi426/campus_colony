@@ -49,10 +49,46 @@ async def add_listing(
 @router.get("/")
 def list_listings(
     sort: str = None,
+    search: str = None,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    return get_listings(db, sort)
+    return get_listings(db, sort, search)
+
+
+@router.get("/{listing_id}")
+def get_listing_details(
+    listing_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    from sqlalchemy.orm import joinedload
+    from app.models.listing import Listing
+    
+    listing = db.query(Listing).filter(Listing.id == listing_id).options(
+        joinedload(Listing.area),
+        joinedload(Listing.landlord)
+    ).first()
+    
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    
+    return {
+        'id': listing.id,
+        'title': listing.title,
+        'description': listing.description,
+        'price': listing.price,
+        'type': listing.type,
+        'image_url': listing.image_url,
+        'latitude': listing.latitude,
+        'longitude': listing.longitude,
+        'area': {'id': listing.area.id, 'name': listing.area.name} if listing.area else None,
+        'landlord': {
+            'id': listing.landlord.id,
+            'name': listing.landlord.name,
+            'phone': listing.landlord.phone
+        } if listing.landlord else None
+    }
 
 
 @router.delete("/{listing_id}")

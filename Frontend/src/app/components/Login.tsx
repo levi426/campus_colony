@@ -130,14 +130,11 @@ export default function Login({ onLogin }: LoginProps) {
                 />
               </div>
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-center">
                 <label className="flex items-center gap-2 text-gray-600">
                   <input type="checkbox" className="w-4 h-4 accent-[#121212]" />
                   <span>Remember me</span>
                 </label>
-                <a href="#" className="text-[#121212] hover:underline">
-                  Forgot password?
-                </a>
               </div>
 
               <button

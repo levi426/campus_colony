@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException
 from app.models.review import Review
 from app.models.listing import Listing
@@ -37,7 +37,7 @@ def get_listing_reviews(db: Session, listing_id: int):
     if not listing:
         raise HTTPException(status_code=404, detail="Listing not found")
 
-    reviews = db.query(Review).filter(Review.listing_id == listing_id).all()
+    reviews = db.query(Review).options(joinedload(Review.user)).filter(Review.listing_id == listing_id).all()
 
     total = len(reviews)
 

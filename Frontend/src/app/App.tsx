@@ -13,6 +13,7 @@ import MessDetails from './components/MessDetails';
 import MessPage from './components/MessPage';
 import UserDashboard from './components/UserDashboard';
 import HostelVisit from './components/HostelVisit';
+import ListingDetails from './components/ListingDetails';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(Boolean(localStorage.getItem('cc_token') || localStorage.getItem('cc_role')));
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="/admin" element={isAdmin ? <AdminDashboard /> : <Navigate to="/login" />} />
         <Route path="/user" element={isLoggedIn && !isAdmin ? <UserDashboard /> : <Navigate to="/login" />} />
         <Route path="/user/hostel/:id" element={isLoggedIn && !isAdmin ? <HostelVisit /> : <Navigate to="/login" />} />
+        <Route path="/listing/:listingId" element={isLoggedIn && !isAdmin ? <ListingDetails /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   );

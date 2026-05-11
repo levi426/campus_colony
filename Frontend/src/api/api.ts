@@ -2,7 +2,7 @@ export const API_URL = "http://localhost:8000";
 
 type JsonBody = Record<string, unknown>;
 
-function authHeaders() {
+function authHeaders(): Record<string, string> {
   const token = localStorage.getItem("cc_token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
@@ -45,18 +45,33 @@ export const deleteLandlord = (id: number) =>
   request(`/landlords/${id}`, { method: "DELETE", headers: authHeaders() });
 
 export const getListings = () => request("/listings/", { headers: authHeaders() });
+export const searchListings = (query: string) => request(`/listings/?search=${encodeURIComponent(query)}`, { headers: authHeaders() });
 export const createListing = (data: FormData) =>
   request("/listings/", { method: "POST", headers: authHeaders(), body: data });
 export const deleteListing = (id: number) =>
   request(`/listings/${id}`, { method: "DELETE", headers: authHeaders() });
 
 export const getAreas = () => request("/areas/");
+export const createArea = (data: JsonBody) => jsonRequest("/areas/", "POST", data, true);
+export const deleteArea = (id: number) =>
+  request(`/areas/${id}`, { method: "DELETE", headers: authHeaders() });
 export const getUsers = () => request("/users/", { headers: authHeaders() });
 export const createReview = (listingId: number, content: string, rating: number) =>
-  jsonRequest(`/reviews/reviews/${listingId}`, "POST", { content, rating }, true);
-export const getListingReviews = (listingId: number) => request(`/reviews/reviews/listing/${listingId}`);
+  jsonRequest(`/reviews/${listingId}`, "POST", { content, rating }, true);
+export const getListingReviews = (listingId: number) => request(`/reviews/listing/${listingId}`);
 export const deleteReview = (reviewId: number) =>
-  request(`/reviews/reviews/${reviewId}`, { method: "DELETE", headers: authHeaders() });
+  request(`/reviews/${reviewId}`, { method: "DELETE", headers: authHeaders() });
+
+export const getFavourites = () => request("/favourites/", { headers: authHeaders() });
+export const addFavourite = (listingId: number) =>
+  request(`/favourites/${listingId}`, { method: "POST", headers: authHeaders() });
+export const removeFavourite = (listingId: number) =>
+  request(`/favourites/${listingId}`, { method: "DELETE", headers: authHeaders() });
+
+export const getListingDetails = (listingId: number) => request(`/listings/${listingId}`, { headers: authHeaders() });
+
+export const predictRent = (data: any) => jsonRequest("/ai/predict-rent", "POST", data);
+export const chatbotSearch = (query: string) => jsonRequest("/ai/chatbot", "POST", { query });
 
 export function resolveImageUrl(imageUrl?: string | null) {
   if (!imageUrl) return "";

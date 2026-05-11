@@ -49,4 +49,5 @@ def my_favourites(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    return db.query(Favourite).filter(Favourite.user_id == user.id).all()
+    from app.services.favourite_service import get_favourites
+    return get_favourites(db, user.id)

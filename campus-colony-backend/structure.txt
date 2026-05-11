@@ -16,6 +16,11 @@
 │   │   ├── listing.py
 │   │   ├── review.py
 │   │   └── user.py
+│   ├── nlp
+│   │   ├── entities.py
+│   │   ├── normalizer.py
+│   │   ├── parser.py
+│   │   └── schemas.py
 │   ├── routes
 │   │   ├── admin.py
 │   │   ├── ai.py
@@ -40,11 +45,13 @@
 │   │   ├── ai_service.py
 │   │   ├── area_service.py
 │   │   ├── auth_service.py
+│   │   ├── chatbot_service.py
 │   │   ├── favourite_service.py
 │   │   ├── landlord_service.py
 │   │   ├── listing_service.py
 │   │   ├── recommendation.py
-│   │   └── review_service.py
+│   │   ├── review_service.py
+│   │   └── user_service.py
 │   └── utils
 │       ├── dependencies.py
 │       ├── helpers.py
@@ -54,4 +61,4 @@
 ├── requirements.txt
 └── structure.txt
 
-8 directories, 47 files
+9 directories, 53 files
