@@ -6,12 +6,11 @@ def extract_price(text: str):
     min_price = None
     max_price = None
 
-    # under / less than
     match = re.search(r"(under|less than|max)\s*(\d+)", text)
     if match:
         max_price = float(match.group(2))
 
-    # above / greater than
+
     match = re.search(r"(above|more than|min)\s*(\d+)", text)
     if match:
         min_price = float(match.group(2))
@@ -44,8 +43,7 @@ def extract_sort(text: str):
 
 
 def extract_area(text: str, db):
-    # match against DB areas (simple contains match)
-    areas = db.query("areas").all()  # we’ll fix usage in service
+    areas = db.query("areas").all()  
     for area in areas:
         if area.name.lower() in text:
             return area.name

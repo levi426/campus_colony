@@ -7,4 +7,4 @@ class ListingFilter(BaseModel):
     area: Optional[str] = None
     type: Optional[str] = None
     min_rating: Optional[float] = None
-    sort_by: Optional[str] = None  # "price_asc", "price_desc", "rating"
+    sort_by: Optional[str] = None  
