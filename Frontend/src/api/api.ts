@@ -1,4 +1,7 @@
-export const API_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:8000"
+    : "https://campus-colony.onrender.com";
 
 type JsonBody = Record<string, unknown>;
 
@@ -8,10 +11,7 @@ function authHeaders(): Record<string, string> {
 }
 
 async function request(path: string, options: RequestInit = {}) {
-  if (!API_URL) {
-    throw new Error("VITE_API_URL is not configured");
-  }
-  const res = await fetch(`${API_URL}${path}`, options);
+  const res = await fetch(`${API_BASE_URL}${path}`, options);
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || `Request failed: ${res.status}`);
@@ -31,10 +31,7 @@ function jsonRequest(path: string, method: string, body: JsonBody, authenticated
 }
 
 export async function fetchTables() {
-  if (!API_URL) {
-    throw new Error("VITE_API_URL is not configured");
-  }
-  const res = await fetch(`${API_URL}/tables`);
+  const res = await fetch(`${API_BASE_URL}/tables`);
   if (!res.ok) throw new Error("Failed to fetch tables");
   return res.json();
 }
@@ -82,5 +79,5 @@ export const chatbotSearch = (query: string) => jsonRequest("/ai/chatbot", "POST
 export function resolveImageUrl(imageUrl?: string | null) {
   if (!imageUrl) return "";
   if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) return imageUrl;
-  return `${API_URL}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
+  return `${API_BASE_URL}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
 }
