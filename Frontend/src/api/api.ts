@@ -1,4 +1,4 @@
-export const API_URL = "http://localhost:8000";
+export const API_URL = import.meta.env.VITE_API_URL;
 
 type JsonBody = Record<string, unknown>;
 
@@ -8,6 +8,9 @@ function authHeaders(): Record<string, string> {
 }
 
 async function request(path: string, options: RequestInit = {}) {
+  if (!API_URL) {
+    throw new Error("VITE_API_URL is not configured");
+  }
   const res = await fetch(`${API_URL}${path}`, options);
   if (!res.ok) {
     const text = await res.text();
@@ -28,6 +31,9 @@ function jsonRequest(path: string, method: string, body: JsonBody, authenticated
 }
 
 export async function fetchTables() {
+  if (!API_URL) {
+    throw new Error("VITE_API_URL is not configured");
+  }
   const res = await fetch(`${API_URL}/tables`);
   if (!res.ok) throw new Error("Failed to fetch tables");
   return res.json();
