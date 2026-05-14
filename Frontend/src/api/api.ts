@@ -4,6 +4,23 @@ const API_BASE_URL =
     : "https://campus-colony.onrender.com";
 
 type JsonBody = Record<string, unknown>;
+export type AuthRole = "USER" | "ADMIN";
+
+export interface AuthUser {
+  id: number;
+  name: string;
+  email: string;
+  role: AuthRole;
+  is_active: boolean;
+  institution?: string | null;
+}
+
+export function clearStoredAuth() {
+  localStorage.removeItem("cc_token");
+  localStorage.removeItem("cc_role");
+  localStorage.removeItem("cc_email");
+  localStorage.removeItem("cc_name");
+}
 
 function authHeaders(): Record<string, string> {
   const token = localStorage.getItem("cc_token");
@@ -11,9 +28,15 @@ function authHeaders(): Record<string, string> {
 }
 
 async function request(path: string, options: RequestInit = {}) {
-  const res = await fetch(`${API_BASE_URL}${path}`, options);
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    credentials: "include",
+    ...options,
+  });
   if (!res.ok) {
     const text = await res.text();
+    if (res.status === 401 || res.status === 403) {
+      clearStoredAuth();
+    }
     throw new Error(text || `Request failed: ${res.status}`);
   }
   return res.json();
@@ -31,13 +54,19 @@ function jsonRequest(path: string, method: string, body: JsonBody, authenticated
 }
 
 export async function fetchTables() {
-  const res = await fetch(`${API_BASE_URL}/tables`);
+  const res = await fetch(`${API_BASE_URL}/tables`, { credentials: "include", headers: authHeaders() });
   if (!res.ok) throw new Error("Failed to fetch tables");
   return res.json();
 }
 
 export const loginUser = (email: string, password: string) =>
   jsonRequest("/auth/login", "POST", { email, password });
+
+export const getCurrentUser = (): Promise<AuthUser> =>
+  request("/auth/me", { headers: authHeaders() });
+
+export const logoutUser = () =>
+  request("/auth/logout", { method: "POST", headers: authHeaders() });
 
 export const signupUser = (name: string, email: string, password: string, institution?: string) =>
   jsonRequest("/auth/signup", "POST", { name, email, password, institution });
@@ -59,6 +88,8 @@ export const createArea = (data: JsonBody) => jsonRequest("/areas/", "POST", dat
 export const deleteArea = (id: number) =>
   request(`/areas/${id}`, { method: "DELETE", headers: authHeaders() });
 export const getUsers = () => request("/users/", { headers: authHeaders() });
+export const getAdminDashboard = () => request("/admin/dashboard", { headers: authHeaders() });
+export const getAdminUserManagement = () => request("/admin/User_Management", { headers: authHeaders() });
 export const createReview = (listingId: number, content: string, rating: number) =>
   jsonRequest(`/reviews/${listingId}`, "POST", { content, rating }, true);
 export const getListingReviews = (listingId: number) => request(`/reviews/listing/${listingId}`);

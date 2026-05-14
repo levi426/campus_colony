@@ -3,11 +3,7 @@ import { useState } from 'react';
 import { Mail, Lock, Building2, ArrowLeft } from 'lucide-react';
 import { loginUser } from '../../api/api';
 
-interface LoginProps {
-  onLogin: (isAdmin: boolean) => void;
-}
-
-export default function Login({ onLogin }: LoginProps) {
+export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,19 +14,11 @@ export default function Login({ onLogin }: LoginProps) {
     setError('');
     try {
       const result = await loginUser(email, password);
-      localStorage.setItem('cc_token', result.access_token);
       localStorage.setItem('cc_email', email);
-      const admin = result.role === 'admin';
-      localStorage.setItem('cc_role', admin ? 'admin' : 'student');
-      onLogin(admin);
+      const admin = result.role === 'ADMIN';
+      localStorage.setItem('cc_role', admin ? 'ADMIN' : 'USER');
       navigate(admin ? '/admin' : '/user');
     } catch {
-      if (email === 'admin' && password) {
-        localStorage.setItem('cc_role', 'admin');
-        onLogin(true);
-        navigate('/admin');
-        return;
-      }
       setError('Login failed. Check your email and password.');
     }
   };
@@ -152,12 +140,6 @@ export default function Login({ onLogin }: LoginProps) {
                 Register now
               </Link>
             </p>
-
-            <div className="mt-6 pt-6 border-t border-[#E9ECEF]">
-              <p className="text-xs text-center text-gray-500">
-                Admin fallback: use email "admin" with any password if backend admin login is not ready.
-              </p>
-            </div>
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { Bot, Home, ListFilter, LogOut, Search, TrendingUp, Heart, MapPin } from 'lucide-react';
 import AIAssistant from './AIAssistant';
 import MyRentals from './MyRentals';
-import { getFavourites, getListings, resolveImageUrl, predictRent, addFavourite, removeFavourite } from '../../api/api';
+import { clearStoredAuth, getFavourites, getListings, logoutUser, resolveImageUrl, predictRent, addFavourite, removeFavourite } from '../../api/api';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
 type Tab = 'home' | 'assistant' | 'browse' | 'prediction';
@@ -41,10 +41,9 @@ export default function UserDashboard() {
     navigate('/home');
   };
 
-  const logout = () => {
-    localStorage.removeItem('cc_token');
-    localStorage.removeItem('cc_role');
-    localStorage.removeItem('cc_email');
+  const logout = async () => {
+    await logoutUser().catch(() => undefined);
+    clearStoredAuth();
     navigate('/home');
   };
 

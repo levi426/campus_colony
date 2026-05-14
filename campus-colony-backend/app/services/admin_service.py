@@ -3,11 +3,12 @@ from app.models.user import User
 from app.models.listing import Listing
 from app.models.review import Review
 from sqlalchemy import func
+from app.utils.security import UserRole
 
 
 def User_Management(db:Session):
     total_users     = db.query(User).count()
-    total_students  = db.query(User).filter(User.role == "student").count()
+    total_students  = db.query(User).filter(User.role.in_([UserRole.USER.value, "student", "user"])).count()
     total_landlords = db.query(User).filter(User.role == "landlord").count()
     total_listings  = db.query(Listing).count()
     active_listings = db.query(Listing).filter(Listing.is_active == True).count()

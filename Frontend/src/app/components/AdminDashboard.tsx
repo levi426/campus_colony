@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Building2, Home, MapPinned, MessageSquare, Trash2, Users, Plus, RefreshCw, LogOut, Search } from 'lucide-react';
-import { createArea, createLandlord, createListing, deleteArea, deleteLandlord, deleteListing, deleteReview, getAreas, getLandlords, getListingReviews, getListings, getUsers, searchListings } from '../../api/api';
+import { clearStoredAuth, createArea, createLandlord, createListing, deleteArea, deleteLandlord, deleteListing, deleteReview, getAreas, getLandlords, getListingReviews, getListings, getUsers, logoutUser, searchListings } from '../../api/api';
 
 type Tab = 'landlords' | 'listings' | 'areas' | 'reviews' | 'users';
 
@@ -198,10 +198,9 @@ export default function AdminDashboard() {
     navigate('/home');
   };
 
-  const logout = () => {
-    localStorage.removeItem('cc_token');
-    localStorage.removeItem('cc_role');
-    localStorage.removeItem('cc_email');
+  const logout = async () => {
+    await logoutUser().catch(() => undefined);
+    clearStoredAuth();
     navigate('/home');
   };
 

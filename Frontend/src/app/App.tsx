@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Layout from './components/Layout';
 import Register from './components/Register';
 import Login from './components/Login';
@@ -14,16 +14,53 @@ import MessPage from './components/MessPage';
 import UserDashboard from './components/UserDashboard';
 import HostelVisit from './components/HostelVisit';
 import ListingDetails from './components/ListingDetails';
+import { AuthRole, clearStoredAuth, getCurrentUser } from '../api/api';
+
+function ProtectedRoute({ role, children }: { role: AuthRole; children: JSX.Element }) {
+  const [status, setStatus] = useState<'checking' | 'allowed' | 'denied'>('checking');
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getCurrentUser()
+      .then((user) => {
+        if (cancelled) return;
+
+        if (user.role === role) {
+          localStorage.setItem('cc_role', user.role);
+          localStorage.setItem('cc_email', user.email);
+          setStatus('allowed');
+        } else {
+          clearStoredAuth();
+          setStatus('denied');
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setStatus('denied');
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [role]);
+
+  if (status === 'checking') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA] text-[#20272B]">
+        Verifying access...
+      </div>
+    );
+  }
+
+  return status === 'allowed' ? children : <Navigate to="/login" replace />;
+}
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(Boolean(localStorage.getItem('cc_token') || localStorage.getItem('cc_role')));
-  const [isAdmin, setIsAdmin] = useState(localStorage.getItem('cc_role') === 'admin');
-
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login onLogin={(admin) => { setIsLoggedIn(true); setIsAdmin(admin); }} />} />
+        <Route path="/login" element={<Login />} />
 
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
@@ -35,10 +72,10 @@ export default function App() {
           <Route path="/ai-assistant" element={<AIAssistant />} />
           <Route path="/mess/:id" element={<MessDetails />} />
         </Route>
-        <Route path="/admin" element={isAdmin ? <AdminDashboard /> : <Navigate to="/login" />} />
-        <Route path="/user" element={isLoggedIn && !isAdmin ? <UserDashboard /> : <Navigate to="/login" />} />
-        <Route path="/user/hostel/:id" element={isLoggedIn && !isAdmin ? <HostelVisit /> : <Navigate to="/login" />} />
-        <Route path="/listing/:listingId" element={isLoggedIn && !isAdmin ? <ListingDetails /> : <Navigate to="/login" />} />
+        <Route path="/admin" element={<ProtectedRoute role="ADMIN"><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/user" element={<ProtectedRoute role="USER"><UserDashboard /></ProtectedRoute>} />
+        <Route path="/user/hostel/:id" element={<ProtectedRoute role="USER"><HostelVisit /></ProtectedRoute>} />
+        <Route path="/listing/:listingId" element={<ProtectedRoute role="USER"><ListingDetails /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );

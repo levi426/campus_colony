@@ -1,6 +1,8 @@
 from fastapi import FastAPI
+from fastapi import Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
+import os
 
 from app.database import Base, engine
 
@@ -20,6 +22,9 @@ from app.routes.listings import router as listings_router
 from app.routes.ai import router as ai_router
 from app.routes.reviews import router as reviews_router  
 from app.routes.favourites import router as favourites_router
+from app.routes.admin import router as admin_router
+from app.utils.dependencies import require_admin
+from app.models.user import User
 from app.routes.users import router as users_router
 
 
@@ -53,6 +58,7 @@ app.include_router(listings_router, prefix="/listings", tags=["Listings"])
 app.include_router(ai_router, prefix="/ai", tags=["AI / Chatbot"])
 app.include_router(reviews_router, tags=["Reviews"])
 app.include_router(favourites_router, prefix="/favourites", tags=["Favourites"])
+app.include_router(admin_router, prefix="/admin", tags=["Admin"])
 
 
 # 🌐 ROOT
@@ -63,7 +69,7 @@ def root():
 
 # 📊 TABLES
 @app.get("/tables")
-def get_tables():
+def get_tables(admin: User = Depends(require_admin)):
     with engine.connect() as conn:
         result = conn.execute(text("""
             SELECT table_name 
@@ -75,7 +81,13 @@ def get_tables():
 
 # ⚠️ RESET DB (DEV ONLY)
 @app.post("/reset-db")
-def reset_db():
+def reset_db(admin: User = Depends(require_admin)):
+    reset_enabled = os.getenv("RESET_DB_ENABLED", "false").lower() in {"1", "true", "yes", "on"}
+    is_production = os.getenv("APP_ENV", "development").lower() in {"production", "prod"}
+
+    if is_production or not reset_enabled:
+        raise HTTPException(status_code=403, detail="Database reset is disabled")
+
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     return {"message": "Database reset successfully"}
@@ -83,7 +95,7 @@ def reset_db():
 
 # 🧬 SCHEMA VIEW
 @app.get("/schema")
-def get_schema():
+def get_schema(admin: User = Depends(require_admin)):
     with engine.connect() as conn:
         result = conn.execute(text("""
             SELECT 

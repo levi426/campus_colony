@@ -4,6 +4,7 @@ from app.database import get_db
 from app.schemas.review import ReviewCreate, ReviewUpdate, ListingReviewResponse
 from app.services import review_service
 from app.utils.security import get_current_user
+from app.utils.dependencies import require_user
 
 router = APIRouter(prefix="/reviews", tags=["Reviews"])
 
@@ -13,11 +14,8 @@ def create_review(
     listing_id: int,
     data: ReviewCreate,
     db: Session = Depends(get_db),
-    user = Depends(get_current_user)
+    user = Depends(require_user)
 ):
-    if user.role != "student":
-        return {"error": "Only students can add reviews"}
-
     return review_service.create_review(
         db,
         user.id,

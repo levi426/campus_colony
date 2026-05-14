@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException
 from app.models.review import Review
 from app.models.listing import Listing
+from app.utils.security import UserRole, normalize_role
 
 def create_review(db: Session, user_id: int, listing_id: int, content: str, rating: int):
 
@@ -88,7 +89,7 @@ def delete_review(db: Session, review_id: int, user):
         raise HTTPException(status_code=404, detail="Review not found")
 
     # owner OR admin
-    if review.user_id != user.id and user.role != "admin":
+    if review.user_id != user.id and normalize_role(user.role) != UserRole.ADMIN.value:
         raise HTTPException(status_code=403, detail="Not allowed")
 
     db.delete(review)
