@@ -273,9 +273,10 @@ export default function AdminDashboard() {
               </button>
             </form>
 
-            <Table title="All Landlords" headers={['Name', 'Phone', 'Email', 'Action']}>
+            <Table title="All Landlords" headers={['ID', 'Name', 'Phone', 'Email', 'Action']}>
               {landlords.map((landlord) => (
                 <tr key={landlord.id} className="border-t border-[#DDE1E6]">
+                  <td className="p-4 font-medium">{landlord.id}</td>
                   <td className="p-4 font-medium">{landlord.name}</td>
                   <td className="p-4">{landlord.phone}</td>
                   <td className="p-4">{landlord.email || '-'}</td>
@@ -332,14 +333,15 @@ export default function AdminDashboard() {
               </button>
             </form>
 
-            <Table title="Listings" headers={['Title', 'Type', 'Price', 'Area', 'Landlord', 'Action']}>
+            <Table title="Listings" headers={['ID', 'Title', 'Type', 'Price', 'Area', 'Landlord', 'Action']}>
               {listings.map((listing) => (
                 <tr key={listing.id} className="border-t border-[#DDE1E6]">
+                  <td className="p-4 font-medium">{listing.id}</td>
                   <td className="p-4 font-medium">{listing.title}</td>
                   <td className="p-4">{listing.type}</td>
                   <td className="p-4">Rs. {listing.price}</td>
-                  <td className="p-4">{listing.area?.name || 'N/A'}</td>
-                  <td className="p-4">{listing.landlord?.name || 'N/A'}</td>
+                  <td className="p-4">{listing.area?.name || 'N/A'}{listing.area?.id ? ` (id: ${listing.area.id})` : ''}</td>
+                  <td className="p-4">{listing.landlord?.name || 'N/A'}{listing.landlord?.id ? ` (id: ${listing.landlord.id})` : ''}</td>
                   <td className="p-4">
                     <IconButton onClick={() => removeListing(listing.id)} label="Delete" />
                   </td>
@@ -378,9 +380,10 @@ export default function AdminDashboard() {
               </button>
             </form>
 
-            <Table title="Areas" headers={['Name', 'Hospitals', 'Pharmacies', 'Libraries', 'Playgrounds', 'Gyms', 'Score', 'Action']}>
+            <Table title="Areas" headers={['ID', 'Name', 'Hospitals', 'Pharmacies', 'Libraries', 'Playgrounds', 'Gyms', 'Score', 'Action']}>
               {areas.map((area) => (
                 <tr key={area.id} className="border-t border-[#DDE1E6]">
+                  <td className="p-4 font-medium">{area.id}</td>
                   <td className="p-4 font-medium">{area.name}</td>
                   <td className="p-4">{area.hospitals}</td>
                   <td className="p-4">{area.pharmacies}</td>
