@@ -103,18 +103,6 @@ export default function AIAssistant() {
               <span>Backend powered</span>
             </div>
           </div>
-          <div className="max-w-4xl mx-auto mt-8 grid gap-3 sm:grid-cols-3">
-            {quickQuestions.map((question) => (
-              <button
-                key={question}
-                type="button"
-                onClick={() => submitQuestion(question)}
-                className="rounded-2xl border border-white bg-white px-4 py-3 text-sm text-[#373F43] shadow-sm hover:bg-[#F3F3F3] transition"
-              >
-                {question}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
 
@@ -206,18 +194,33 @@ export default function AIAssistant() {
           </div>
 
           <div className="bg-white p-6 border-t border-[#717684]">
-            <form onSubmit={handleSubmit} className="flex gap-3">
+            <div className="mb-4">
+              <p className="text-sm text-[#373F43] font-semibold mb-3">Try one of these quick questions:</p>
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                {quickQuestions.map((question) => (
+                  <button
+                    key={question}
+                    type="button"
+                    onClick={() => submitQuestion(question)}
+                    className="rounded-full border border-[#DDE1E6] bg-[#F8F9FA] px-4 py-2 text-sm text-[#373F43] hover:bg-[#E8EEF3] transition"
+                  >
+                    {question}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row">
               <input
                 type="text"
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
                 placeholder="Ask about rent, area, hostel type, or rating..."
-                className="flex-1 px-4 py-3 border border-[#717684] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#373F43] bg-white"
+                className="flex-1 px-4 py-3 border border-[#717684] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#373F43] bg-white"
               />
               <button
                 type="submit"
                 disabled={isLoading}
-                className="bg-[#373F43] text-white px-8 py-3 rounded-xl hover:bg-[#4A5258] transition-colors flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="bg-[#373F43] text-white px-8 py-3 rounded-2xl hover:bg-[#4A5258] transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                 Ask
