@@ -32,9 +32,13 @@ export default function AIAssistant() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    const query = input.trim();
+  const quickQuestions = [
+    'Show me all the hostels of Faisal Town',
+    'Show me all the listings of Faisal Town',
+    'Show me all the hostels of Faisal Town having fee less than 2000',
+  ];
+
+  const submitQuestion = async (query: string) => {
     if (!query || isLoading) return;
 
     setInput('');
@@ -70,6 +74,11 @@ export default function AIAssistant() {
     }
   };
 
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    await submitQuestion(input.trim());
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <div className="bg-[#373F43] text-white">
@@ -93,6 +102,18 @@ export default function AIAssistant() {
               <Sparkles className="w-4 h-4" />
               <span>Backend powered</span>
             </div>
+          </div>
+          <div className="max-w-4xl mx-auto mt-8 grid gap-3 sm:grid-cols-3">
+            {quickQuestions.map((question) => (
+              <button
+                key={question}
+                type="button"
+                onClick={() => submitQuestion(question)}
+                className="rounded-2xl border border-white bg-white px-4 py-3 text-sm text-[#373F43] shadow-sm hover:bg-[#F3F3F3] transition"
+              >
+                {question}
+              </button>
+            ))}
           </div>
         </div>
       </div>
